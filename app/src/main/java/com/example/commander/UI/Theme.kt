@@ -8,6 +8,12 @@ private val DarkColorScheme = darkColorScheme(
     secondary = Secondary,
     background = Background,
     error = Error,
+    outline = Border,
+    outlineVariant = BorderLight,
+    surfaceVariant = BackgroundSecondary,
+    onSurfaceVariant = BorderLight,
+    onBackground = Secondary,
+
 )
 
 @Composable
@@ -18,6 +24,7 @@ fun CommanderTheme(
         colorScheme = DarkColorScheme,
         typography = AppTypography,
         shapes = AppShapes,
-        content = content
+        content = content,
+
     )
 }
