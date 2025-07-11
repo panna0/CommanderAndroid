@@ -6,6 +6,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.commander.Components.Btn
+import com.example.commander.Components.CustomInput
+import com.example.commander.UI.AppShapes
 
 @Composable
 fun LoginScreen(navController: NavHostController, users: List<Pair<String, String>>) {
@@ -16,18 +19,22 @@ fun LoginScreen(navController: NavHostController, users: List<Pair<String, Strin
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Login", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(value = username, onValueChange = { username = it }, label = { Text("Username") })
-        OutlinedTextField(value = password, onValueChange = { password = it }, label = { Text("Password") })
+        CustomInput(value = username, onValueChange = { username = it }, label = "Username")
+        CustomInput(value = password, onValueChange = { password = it }, label = "Password", isPassword = true)
+
         Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = {
+        Btn(onClick = {
             if (users.any { it.first == username && it.second == password }) {
                 navController.navigate("home/$username")
             } else {
                 error = "Credenziali errate"
-            }
-        }) {
-            Text("Login")
-        }
+            }},
+            text = "Login",
+            shape = AppShapes.medium,
+            modifier = Modifier.fillMaxWidth()
+
+        )
+
         TextButton(onClick = { navController.navigate("register") }) {
             Text("Non hai un account? Registrati")
         }
