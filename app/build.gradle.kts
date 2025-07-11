@@ -59,6 +59,8 @@ dependencies {
     implementation(libs.googleMaterial)
     implementation(libs.androidxActivity)
     implementation(libs.androidxConstraintlayout)
+    implementation(libs.androidx.icons.extended)
+
 
     // Test
     testImplementation(libs.junit)
