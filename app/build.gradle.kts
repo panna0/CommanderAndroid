@@ -54,13 +54,14 @@ dependencies {
     debugImplementation(libs.androidxComposeUiTooling)
 
     // Core libraries
+    implementation(libs.androidx.navigation.animation)
     implementation(libs.androidxCoreKtx)
     implementation(libs.androidxAppcompat)
     implementation(libs.googleMaterial)
     implementation(libs.androidxActivity)
     implementation(libs.androidxConstraintlayout)
     implementation(libs.androidx.icons.extended)
-
+    implementation(libs.coil.compose)
 
     // Test
     testImplementation(libs.junit)
