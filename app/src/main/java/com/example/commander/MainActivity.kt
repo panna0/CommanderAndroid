@@ -13,8 +13,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CommanderTheme {
-                val navController = rememberNavController()
-                AppNavigation(navController)
+
+                AppNavigation()
             }
 
 
