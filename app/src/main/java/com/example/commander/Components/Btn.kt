@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
 
 import com.example.commander.UI.AppShapes
@@ -18,7 +19,7 @@ fun Btn(
     onClick: () -> Unit,
     text: String,
     modifier: Modifier = Modifier,
-    shape: androidx.compose.ui.graphics.Shape = AppShapes.medium,
+    shape: Shape = AppShapes.medium,
     colors: ButtonColors = ButtonDefaults.buttonColors(
         containerColor = MaterialTheme.colorScheme.primary,
         contentColor = MaterialTheme.colorScheme.onPrimary,
