@@ -75,7 +75,8 @@ fun RegisterScreen(
                 CustomInput(
                     value = userData.value.birthdate,
                     onValueChange = { userData.value = userData.value.copy(birthdate = it) },
-                    label = "Data di nascita"
+                    label = "Data di nascita",
+                    isDate = true,
                 )
             }
 

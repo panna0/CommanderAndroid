@@ -1,20 +1,21 @@
 package com.example.commander.Components
 
-
-
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.*
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import com.example.commander.UI.AppShapes
+import java.text.SimpleDateFormat
+import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomInput(
     value: String,
@@ -22,30 +23,69 @@ fun CustomInput(
     label: String,
     modifier: Modifier = Modifier,
     isPassword: Boolean = false,
+    isDate: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     singleLine: Boolean = true
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    var showDateDialog by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
+
+    if (isDate && showDateDialog) {
+        DatePickerDialog(
+            onDismissRequest = { showDateDialog = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val selected = datePickerState.selectedDateMillis
+                    if (selected != null) {
+                        val formatted = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(selected))
+                        onValueChange(formatted)
+                    }
+                    showDateDialog = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDateDialog = false }) {
+                    Text("Annulla")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
 
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { if (!isDate) onValueChange(it) }, // blocca input manuale se isDate
         label = { Text(label) },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (isDate) Modifier.clickable { showDateDialog = true } else Modifier
+            ),
         singleLine = singleLine,
+        readOnly = isDate,
         visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
         keyboardOptions = KeyboardOptions(
             keyboardType = if (isPassword) KeyboardType.Password else keyboardType,
             imeAction = imeAction
         ),
         trailingIcon = {
-            if (isPassword) {
-                val icon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
-                val description = if (passwordVisible) "Nascondi password" else "Mostra password"
-
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = icon, contentDescription = description)
+            when {
+                isPassword -> {
+                    val icon = if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility
+                    val description = if (passwordVisible) "Nascondi password" else "Mostra password"
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = icon, contentDescription = description)
+                    }
+                }
+                isDate -> {
+                    IconButton(onClick = { showDateDialog = true }) {
+                        Icon(imageVector = Icons.Filled.CalendarToday, contentDescription = "Seleziona data")
+                    }
                 }
             }
         },
@@ -53,10 +93,8 @@ fun CustomInput(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
             cursorColor = MaterialTheme.colorScheme.primary,
-            focusedLabelColor = MaterialTheme.colorScheme.primary,
-
+            focusedLabelColor = MaterialTheme.colorScheme.primary
         ),
         shape = AppShapes.medium,
-
     )
 }
