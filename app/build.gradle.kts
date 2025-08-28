@@ -54,6 +54,8 @@ dependencies {
     debugImplementation(libs.androidxComposeUiTooling)
 
     // Core libraries
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
     implementation(libs.androidx.navigation.animation)
     implementation(libs.androidxCoreKtx)
     implementation(libs.androidxAppcompat)
