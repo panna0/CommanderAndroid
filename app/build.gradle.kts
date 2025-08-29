@@ -64,6 +64,7 @@ dependencies {
     implementation(libs.androidxConstraintlayout)
     implementation(libs.androidx.icons.extended)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.datastore.preferences)
 
     // Test
     testImplementation(libs.junit)
