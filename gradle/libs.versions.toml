@@ -15,11 +15,12 @@ constraintlayout = "2.2.1"
 accompanist = "0.34.0"
 retrofit = "2.9.0"
 converterGson = "2.9.0"
+datastore = "1.0.0"
 
 [libraries]
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson"}
 retrofit = {module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit"}
-
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastore" }
 androidx-navigation-animation = { module = "com.google.accompanist:accompanist-navigation-animation", version.ref = "accompanist" }
 coil-compose = { group = "io.coil-kt", name = "coil-compose", version = "2.6.0" }
 androidx-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "compose" }

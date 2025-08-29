@@ -20,9 +20,25 @@ object AuthContext {
     }
 
     suspend fun verifyOtp(otpRequest: OtpRequest): Response<LoginResponse> {
+        val response = api.verifyOtp(otpRequest)
+
+        Log.d("otp", "otp response: ${response.code()} - ${response.message()}")
+        Log.d("otp", "Body: ${response.body()}")
+        Log.d("otp", "ErrorBody: ${response.errorBody()?.string()}")
 
         // Call the specific verifyOtp function
-        return api.verifyOtp(otpRequest)
+        return response
+    }
+
+    suspend fun requestOtp(loginRequest: LoginRequest): Response<OtpResponse>{
+        val response = api.requestOtp(loginRequest)
+
+        Log.d("otp", "otp response: ${response.code()} - ${response.message()}")
+
+
+
+
+        return response
     }
 
     suspend fun register(user: User): Response<RegistrationResponse>{
@@ -43,6 +59,11 @@ object AuthContext {
 
     suspend fun checkEmail(checkEmailRequest: CheckEmailRequest) : Response<CheckEmailResponse>{
         return api.checkEmail(checkEmailRequest)
+    }
+
+    suspend fun refreshToken(refreshTokenRequest: refreshTokenRequest) : Response<refreshTokenResponse>{
+
+        return api.refreshToken(refreshTokenRequest)
     }
 
     // The helper functions are no longer needed, so you can remove them!

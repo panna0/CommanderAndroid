@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.commander.Components.Btn
@@ -14,9 +15,11 @@ import com.example.commander.Network.AuthContext
 import com.example.commander.Models.LoginRequest
 import com.example.commander.Models.OtpRequest
 import com.example.commander.Models.User
+import com.example.commander.Storage.TokenManager
 import com.example.commander.UI.AppShapes
 import com.example.commander.UI.AppTypography
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun LoginScreen(navController: NavHostController, users: List<User>) {
@@ -28,6 +31,8 @@ fun LoginScreen(navController: NavHostController, users: List<User>) {
     var isLoading by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
 
     Box(
         modifier = Modifier
@@ -86,7 +91,8 @@ fun LoginScreen(navController: NavHostController, users: List<User>) {
                         try {
                             if (!otpSent) {
                                 val response = AuthContext.login(LoginRequest(username, password))
-                                if (response.isSuccessful) {
+                                val responseOtp = AuthContext.requestOtp(LoginRequest(username, password))
+                                if (responseOtp.isSuccessful) {
                                     otpSent = true
                                     error = ""
                                 } else {
@@ -96,8 +102,12 @@ fun LoginScreen(navController: NavHostController, users: List<User>) {
                                 val response = AuthContext.verifyOtp(OtpRequest(username, otp))
                                 if (response.isSuccessful) {
                                     val tokens = response.body()
-                                    // TODO: salva tokens in DataStore / SharedPreferences
-                                    navController.navigate("home/$username")
+                                    tokens?.let {
+                                        tokenManager.saveTokens(it.access, it.refresh)
+                                    }
+                                    navController.navigate("home/$username"){
+                                        popUpTo("login/") { inclusive = true }
+                                    }
                                 } else {
                                     error = "OTP non valido"
                                 }

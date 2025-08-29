@@ -10,6 +10,8 @@ import com.example.commander.Models.OtpRequest
 import com.example.commander.Models.OtpResponse
 import com.example.commander.Models.RegistrationResponse
 import com.example.commander.Models.User
+import com.example.commander.Models.refreshTokenRequest
+import com.example.commander.Models.refreshTokenResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -29,7 +31,7 @@ interface ApiService {
     @POST("login/")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
 
-    @POST("login/request-otp")
+    @POST("login/request-otp/")
     suspend fun requestOtp(@Body body: LoginRequest): Response<OtpResponse>
 
     @POST("login/verify-otp/")
@@ -43,4 +45,7 @@ interface ApiService {
 
     @POST("check-email/")
     suspend fun checkEmail(@Body body: CheckEmailRequest): Response<CheckEmailResponse>
+
+    @POST("token/refresh/")
+    suspend fun refreshToken(@Body body: refreshTokenRequest): Response<refreshTokenResponse>
 }
