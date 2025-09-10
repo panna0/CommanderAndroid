@@ -5,17 +5,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.commander.Components.Btn
 import com.example.commander.Components.CustomInput
+import com.example.commander.Components.EditableProfilePhoto
 import com.example.commander.Models.CheckEmailRequest
-import com.example.commander.Models.CheckUsernameRequest
 import com.example.commander.Models.User
-import com.example.commander.Network.AuthContext
+import com.example.commander.Network.ApiContext
 import com.example.commander.UI.AppTypography
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import java.io.File
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -41,7 +43,6 @@ fun RegisterScreen(
 ) {
     var step by remember { mutableStateOf(0) }
 
-    // stati di errore per i singoli campi
     var nameError by remember { mutableStateOf<String?>(null) }
     var surnameError by remember { mutableStateOf<String?>(null) }
     var birthdateError by remember { mutableStateOf<String?>(null) }
@@ -50,6 +51,10 @@ fun RegisterScreen(
     var password2Error by remember { mutableStateOf<String?>(null) }
     var usernameError by remember { mutableStateOf<String?>(null) }
     var serverError by remember { mutableStateOf<String?>(null) }
+
+
+    val context = LocalContext.current
+    val apiContext = remember { ApiContext(context) }
 
     val userData = remember {
         mutableStateOf(
@@ -68,15 +73,12 @@ fun RegisterScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
-    // Helper functions for validation
     fun isValidName(name: String): Boolean {
         return name.isNotBlank() && name.first().isUpperCase()
     }
 
-    // Formattatore per l'input utente
     val inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ITALY)
 
-    // Formattatore per l'output richiesto dal backend
     val outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     fun isValidBirthdate(birthdate: String): Boolean {
@@ -115,9 +117,8 @@ fun RegisterScreen(
         if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             return "Inserisci una email valida."
         }
-
         return try {
-            val response = AuthContext.checkEmail(CheckEmailRequest(email))
+            val response = apiContext.checkEmail(CheckEmailRequest(email))
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null && body.email_taken) {
@@ -133,33 +134,10 @@ fun RegisterScreen(
         }
     }
 
-    suspend fun getUsernameErr(username: String): String? {
-        if (username.isBlank() || username.contains(" ")) {
-            return "Lo username non può essere vuoto o contenere spazi."
-        }
-
-        return try {
-            val response = AuthContext.checkUsername(CheckUsernameRequest(username))
-            if (response.isSuccessful) {
-                val body = response.body()
-                if (body != null && body.username_taken) {
-                    "Username già in utilizzo."
-                } else {
-                    null
-                }
-            } else {
-                "Errore di connessione al server."
-            }
-        } catch (e: Exception) {
-            "Errore di connessione al server."
-        }
-    }
-
-    // 🔹 Validazione asincrona email mentre scrivi (con debounce)
     LaunchedEffect(userData.value.email) {
         val email = userData.value.email
         if (email.isNotBlank()) {
-            delay(500) // debounce
+            delay(500)
             emailError = getEmailError(email)
         } else {
             emailError = null
@@ -169,8 +147,8 @@ fun RegisterScreen(
     LaunchedEffect(userData.value.username) {
         val username = userData.value.username
         if (username.isNotBlank()) {
-            delay(500) // debounce
-            usernameError = getUsernameErr(username)
+            delay(500)
+            usernameError = apiContext.getUsernameErr(username)
         } else {
             usernameError = null
         }
@@ -275,6 +253,17 @@ fun RegisterScreen(
             }
 
             2 -> {
+
+                EditableProfilePhoto(
+                    initialPhoto = userData.value.profile_image,
+                    displayName = userData.value.first_name + " " + userData.value.last_name,
+                    onPhotoChanged = { newFile ->
+                        userData.value = userData.value.copy(profile_image = newFile)
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 CustomInput(
                     value = userData.value.username,
                     onValueChange = {
@@ -284,8 +273,6 @@ fun RegisterScreen(
                     label = "Username",
                     errorMessage = usernameError
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("Foto profilo (simulata)")
             }
         }
 
@@ -332,10 +319,9 @@ fun RegisterScreen(
                                 }
                             }
                             2 -> {
-                                usernameError = getUsernameErr(userData.value.username)
+                                usernameError = apiContext.getUsernameErr(userData.value.username)
 
                                 if (usernameError == null) {
-                                    // Conversione della data al formato AAAA-MM-GG prima di inviare i dati
                                     val formattedUser = userData.value.copy(
                                         date_of_birth = LocalDate.parse(
                                             userData.value.date_of_birth,
@@ -343,7 +329,7 @@ fun RegisterScreen(
                                         ).format(outputFormatter)
                                     )
                                     try {
-                                        val response = AuthContext.register(formattedUser)
+                                        val response = apiContext.register(formattedUser)
                                         if (response.isSuccessful) {
                                             onRegister(formattedUser)
                                             users.add(formattedUser)
@@ -353,6 +339,8 @@ fun RegisterScreen(
                                         }
                                     } catch (e: Exception) {
                                         serverError = "Errore di connessione al server."
+                                    } finally {
+                                        userData.value.profile_image?.delete()
                                     }
                                 }
                             }

@@ -1,5 +1,6 @@
 package com.example.commander.Screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,10 +12,10 @@ import androidx.navigation.NavHostController
 import com.example.commander.Components.Btn
 import com.example.commander.Components.CustomInput
 import com.example.commander.Components.OtpInput
-import com.example.commander.Network.AuthContext
 import com.example.commander.Models.LoginRequest
 import com.example.commander.Models.OtpRequest
 import com.example.commander.Models.User
+import com.example.commander.Network.ApiContext
 import com.example.commander.Storage.TokenManager
 import com.example.commander.UI.AppShapes
 import com.example.commander.UI.AppTypography
@@ -33,6 +34,7 @@ fun LoginScreen(navController: NavHostController, users: List<User>) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
+    val apiContext = remember { ApiContext(context) }
 
     Box(
         modifier = Modifier
@@ -90,8 +92,8 @@ fun LoginScreen(navController: NavHostController, users: List<User>) {
                         isLoading = true
                         try {
                             if (!otpSent) {
-                                val response = AuthContext.login(LoginRequest(username, password))
-                                val responseOtp = AuthContext.requestOtp(LoginRequest(username, password))
+                                val response = apiContext.login(LoginRequest(username, password))
+                                val responseOtp = apiContext.requestOtp(LoginRequest(username, password))
                                 if (responseOtp.isSuccessful) {
                                     otpSent = true
                                     error = ""
@@ -99,15 +101,20 @@ fun LoginScreen(navController: NavHostController, users: List<User>) {
                                     error = "Login failed"
                                 }
                             } else {
-                                val response = AuthContext.verifyOtp(OtpRequest(username, otp))
+                                val response = apiContext.verifyOtp(OtpRequest(username, otp))
                                 if (response.isSuccessful) {
                                     val tokens = response.body()
                                     tokens?.let {
+
                                         tokenManager.saveTokens(it.access, it.refresh)
+                                        Log.d("Login", "Token salvati: access=${it.access}, refresh=${it.refresh}")
+
+                                        navController.navigate("home/$username") {
+                                            popUpTo("login") { inclusive = true }
+                                        }
                                     }
-                                    navController.navigate("home/$username"){
-                                        popUpTo("login/") { inclusive = true }
-                                    }
+
+
                                 } else {
                                     error = "OTP non valido"
                                 }
