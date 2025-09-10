@@ -1,0 +1,131 @@
+package com.example.commander.Network
+
+import android.content.Context
+import android.util.Log
+import com.example.commander.Models.*
+import retrofit2.Response
+
+class ApiContext(private val context: Context) {
+
+
+    private val api: ApiService by lazy {
+        RetrofitInstance.getApiService(context)
+    }
+
+    suspend fun getUser(): Response<User>{
+        val response = api.getUser()
+        Log.d("user", "Login response: ${response.code()} - ${response.message()}")
+        Log.d("user", "Body: ${response.body()}")
+        Log.d("user", "ErrorBody: ${response.errorBody()?.string()}")
+
+
+        return response
+    }
+
+    suspend fun login(credentials: LoginRequest): Response<LoginResponse> {
+        val response = api.login(credentials)
+
+        Log.d("AuthContext", "Login response: ${response.code()} - ${response.message()}")
+        Log.d("AuthContext", "Body: ${response.body()}")
+        Log.d("AuthContext", "ErrorBody: ${response.errorBody()?.string()}")
+
+        return response
+    }
+
+    suspend fun verifyOtp(otpRequest: OtpRequest): Response<LoginResponse> {
+        val response = api.verifyOtp(otpRequest)
+
+        Log.d("otp", "otp response: ${response.code()} - ${response.message()}")
+        Log.d("otp", "Body: ${response.body()}")
+        Log.d("otp", "ErrorBody: ${response.errorBody()?.string()}")
+
+        return response
+    }
+
+    suspend fun requestOtp(loginRequest: LoginRequest): Response<OtpResponse> {
+        val response = api.requestOtp(loginRequest)
+
+        Log.d("otp", "otp response: ${response.code()} - ${response.message()}")
+
+        return response
+    }
+
+    suspend fun register(user: User): Response<RegistrationResponse> {
+        val response = api.register(user)
+
+        Log.d("AuthContext", "Login response: ${response.code()} - ${response.message()}")
+        Log.d("AuthContext", "Body: ${response.body()}")
+        Log.d("AuthContext", "ErrorBody: ${response.errorBody()?.string()}")
+
+        return response
+    }
+
+    suspend fun checkUsername(checkUsernameRequest: CheckUsernameRequest): Response<CheckUsernameResponse> {
+        return api.checkUsername(checkUsernameRequest)
+    }
+
+    suspend fun checkEmail(checkEmailRequest: CheckEmailRequest): Response<CheckEmailResponse> {
+        return api.checkEmail(checkEmailRequest)
+    }
+
+    suspend fun refreshToken(refreshTokenRequest: refreshTokenRequest): Response<refreshTokenResponse> {
+        val response = api.refreshToken(refreshTokenRequest)
+        Log.d("refresh", "refresh response: ${response.code()} - ${response.message()}")
+        Log.d("refresh", "Body: ${response.body()}")
+        Log.d("refresh", "ErrorBody: ${response.errorBody()?.string()}")
+
+        return response
+    }
+
+    suspend fun getUsernameErr(username: String): String? {
+        if (username.isBlank() || username.contains(" ")) {
+            return "Lo username non può essere vuoto o contenere spazi."
+        }
+
+        return try {
+            val response = checkUsername(CheckUsernameRequest(username))
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null && body.username_taken) {
+                    "Username già in utilizzo."
+                } else {
+                    null
+                }
+            } else {
+                "Errore di connessione al server."
+            }
+        } catch (e: Exception) {
+            "Errore di connessione al server."
+        }
+    }
+
+    suspend fun changeUsername(checkUsernameRequest: CheckUsernameRequest): Response<OtpResponse>{
+        val response = api.changeUsername(checkUsernameRequest)
+
+        return response
+    }
+
+    suspend fun getMatches(): Response<MatchesResponse>{
+        val response = api.getMatches()
+
+        return response
+    }
+
+    suspend fun createSession(id: String): Response<CreateSessionResponse>{
+        val response = api.createSession(id)
+
+        return response
+    }
+
+    suspend fun leaveSession(roomCode: String): Response<OtpResponse>{
+        val response = api.leaveSession(roomCode)
+
+        return response
+    }
+
+    suspend fun getMatch(id: String): Response<Match>{
+        val response = api.getMatch(id)
+
+        return response
+    }
+}

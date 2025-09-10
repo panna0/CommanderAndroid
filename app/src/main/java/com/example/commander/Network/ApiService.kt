@@ -4,8 +4,11 @@ import com.example.commander.Models.CheckEmailRequest
 import com.example.commander.Models.CheckEmailResponse
 import com.example.commander.Models.CheckUsernameRequest
 import com.example.commander.Models.CheckUsernameResponse
+import com.example.commander.Models.CreateSessionResponse
 import com.example.commander.Models.LoginRequest
 import com.example.commander.Models.LoginResponse
+import com.example.commander.Models.Match
+import com.example.commander.Models.MatchesResponse
 import com.example.commander.Models.OtpRequest
 import com.example.commander.Models.OtpResponse
 import com.example.commander.Models.RegistrationResponse
@@ -16,6 +19,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Url
 
 interface ApiService {
@@ -26,8 +30,19 @@ interface ApiService {
     @POST
     suspend fun postRequest(@Url url: String, @Body body: Any): Response<LoginResponse>
 
-    // A better approach is to create specific functions for each endpoint.
-    // This is cleaner and more explicit.
+
+
+    @GET("current-user/")
+    suspend fun getUser(): Response<User>
+
+    @GET("my-game-configurations/")
+    suspend fun getMatches(): Response<MatchesResponse>
+
+    @GET("game-configurations/{id}/")
+    suspend fun getMatch(
+        @Path("id") gameId: String
+    ): Response<Match>
+
     @POST("login/")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
 
@@ -48,4 +63,17 @@ interface ApiService {
 
     @POST("token/refresh/")
     suspend fun refreshToken(@Body body: refreshTokenRequest): Response<refreshTokenResponse>
+
+    @POST("change-username/")
+    suspend fun changeUsername(@Body body: CheckUsernameRequest): Response<OtpResponse>
+
+    @POST("game-configurations/{id}/create-session/")
+    suspend fun createSession(
+        @Path("id") gameId: String
+    ): Response<CreateSessionResponse>
+
+    @POST("sessions/{roomCode}/leave/")
+    suspend fun leaveSession(
+        @Path("roomCode") roomCode: String
+    ): Response<OtpResponse>
 }
