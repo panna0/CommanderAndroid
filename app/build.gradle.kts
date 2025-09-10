@@ -41,7 +41,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
+        kotlinCompilerExtensionVersion = "1.5.2"
     }
 }
 
@@ -52,8 +52,10 @@ dependencies {
     implementation(libs.androidxComposeMaterial3)
     implementation(libs.androidxNavigationCompose)
     debugImplementation(libs.androidxComposeUiTooling)
-
+    implementation(platform(libs.androidx.compose.bom))
     // Core libraries
+    implementation(libs.androidx.foundation)
+    implementation(libs.foundation)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.androidx.navigation.animation)
@@ -64,7 +66,12 @@ dependencies {
     implementation(libs.androidxConstraintlayout)
     implementation(libs.androidx.icons.extended)
     implementation(libs.coil.compose)
+    implementation(libs.android)
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.location)
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.okhttp)
+
 
     // Test
     testImplementation(libs.junit)
