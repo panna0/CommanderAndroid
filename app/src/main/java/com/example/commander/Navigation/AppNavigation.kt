@@ -21,9 +21,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.commander.Components.BottomNavBar
 
 import com.example.commander.Models.User
+import com.example.commander.Screens.CreateTeamsScreen
+import com.example.commander.Screens.EditProfileScreen
 
 import com.example.commander.Screens.LoginScreen
+import com.example.commander.Screens.MapScreen
+import com.example.commander.Screens.ProfileScreen
 import com.example.commander.Screens.RegisterScreen
+import com.example.commander.Screens.YourMatchesScreen
 
 @Composable
 fun AppNavigation() {
@@ -39,8 +44,8 @@ fun AppNavigation() {
 
         Scaffold(
             bottomBar = {
-                // Mostra la navbar solo se NON sei in login/register
-                if (currentRoute != "login" && currentRoute != "register") {
+
+                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute !="yourMatches") {
                     BottomNavBar(navController = navController)
                 }
             }
@@ -93,10 +98,21 @@ fun AppNavigation() {
                     HomeScreen(username = username, navController = navController)
                 }
                 composable("profile") {
-                    Text("Profilo") // TODO: metti la tua ProfileScreen
+                    ProfileScreen(navController= navController)
                 }
-                composable("settings") {
-                    Text("Impostazioni") // TODO: metti la tua SettingsScreen
+                composable("map") {
+                    MapScreen(navController= navController)
+                }
+                composable("editProfile") {
+                    EditProfileScreen(navController= navController)
+                }
+
+                composable("yourMatches") {
+                    YourMatchesScreen(navController= navController)
+                }
+
+                composable("createTeams/{roomCode}") {
+                    CreateTeamsScreen(navController= navController)
                 }
             }
         }
