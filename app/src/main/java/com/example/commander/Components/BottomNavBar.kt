@@ -35,8 +35,8 @@ fun BottomNavBar(navController: NavHostController) {
                 contentDescription = "Home"
             )
         },
-        NavItem("Map", "profile") { Icon(Icons.Default.Map, contentDescription = "Profile") },
-        NavItem("Profile", "settings") {
+        NavItem("Map", "map") { Icon(Icons.Default.Map, contentDescription = "Profile") },
+        NavItem("Profile", "profile") {
             Icon(
                 Icons.Default.Person,
                 contentDescription = "Settings"
