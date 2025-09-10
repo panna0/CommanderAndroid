@@ -1,6 +1,7 @@
 package com.example.commander.Models
 
 import android.net.Uri
+import java.io.File
 
 data class User(
     val first_name: String,
@@ -10,5 +11,5 @@ data class User(
     val password: String,
     val password2: String,
     val username: String,
-    val profile_image: Uri? = null
+    var profile_image: File? = null
 )
