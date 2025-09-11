@@ -53,6 +53,7 @@ dependencies {
     implementation(libs.androidxNavigationCompose)
     debugImplementation(libs.androidxComposeUiTooling)
     implementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(platform(libs.androidx.compose.bom))
     // Core libraries
     implementation(libs.androidx.foundation)
     implementation(libs.foundation)
