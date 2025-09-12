@@ -1,5 +1,7 @@
 package com.example.commander.Network
 
+import com.example.commander.Models.AddTeamRequest
+import com.example.commander.Models.AddTeamResponse
 import com.example.commander.Models.CheckEmailRequest
 import com.example.commander.Models.CheckEmailResponse
 import com.example.commander.Models.CheckUsernameRequest
@@ -11,6 +13,7 @@ import com.example.commander.Models.Match
 import com.example.commander.Models.MatchesResponse
 import com.example.commander.Models.OtpRequest
 import com.example.commander.Models.OtpResponse
+import com.example.commander.Models.Player
 import com.example.commander.Models.RegistrationResponse
 import com.example.commander.Models.User
 import com.example.commander.Models.refreshTokenRequest
@@ -42,6 +45,16 @@ interface ApiService {
     suspend fun getMatch(
         @Path("id") gameId: String
     ): Response<Match>
+
+    @GET("sessions/{roomCode}/players/")
+    suspend fun getPlayersInSession(
+        @Path("roomCode") roomCode: String
+    ): Response<List<Player>>
+
+    @GET("user/{username}/profile-image/")
+    suspend fun getPlayerPic(
+        @Path("username") username : String
+    ): Response<String>
 
     @POST("login/")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
@@ -76,4 +89,9 @@ interface ApiService {
     suspend fun leaveSession(
         @Path("roomCode") roomCode: String
     ): Response<OtpResponse>
+
+    @POST("sessions/{roomCode}/teams/create/")
+    suspend fun createTeams(@Body body: AddTeamRequest,
+        @Path("roomCode") roomCode: String
+    ): Response<AddTeamResponse>
 }

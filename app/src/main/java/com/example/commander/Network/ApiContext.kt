@@ -12,7 +12,7 @@ class ApiContext(private val context: Context) {
         RetrofitInstance.getApiService(context)
     }
 
-    suspend fun getUser(): Response<User>{
+    suspend fun getUser(): Response<User> {
         val response = api.getUser()
         Log.d("user", "Login response: ${response.code()} - ${response.message()}")
         Log.d("user", "Body: ${response.body()}")
@@ -99,32 +99,52 @@ class ApiContext(private val context: Context) {
         }
     }
 
-    suspend fun changeUsername(checkUsernameRequest: CheckUsernameRequest): Response<OtpResponse>{
+    suspend fun changeUsername(checkUsernameRequest: CheckUsernameRequest): Response<OtpResponse> {
         val response = api.changeUsername(checkUsernameRequest)
 
         return response
     }
 
-    suspend fun getMatches(): Response<MatchesResponse>{
+    suspend fun getMatches(): Response<MatchesResponse> {
         val response = api.getMatches()
 
         return response
     }
 
-    suspend fun createSession(id: String): Response<CreateSessionResponse>{
+    suspend fun createSession(id: String): Response<CreateSessionResponse> {
         val response = api.createSession(id)
 
         return response
     }
 
-    suspend fun leaveSession(roomCode: String): Response<OtpResponse>{
+    suspend fun leaveSession(roomCode: String): Response<OtpResponse> {
         val response = api.leaveSession(roomCode)
 
         return response
     }
 
-    suspend fun getMatch(id: String): Response<Match>{
+    suspend fun getMatch(id: String): Response<Match> {
         val response = api.getMatch(id)
+
+        return response
+    }
+
+    suspend fun addTeam(roomCode: String, addTeamRequest: AddTeamRequest): Response<AddTeamResponse>{
+        val response = api.createTeams(body = addTeamRequest, roomCode)
+
+        Log.d("add team", "Body: ${response.body()}")
+
+        return response
+    }
+
+    suspend fun getPlayersInSession(roomCode: String): Response<List<Player>>{
+        val response = api.getPlayersInSession(roomCode = roomCode)
+
+        return response
+    }
+
+    suspend fun getPlayerPic (username: String): Response<String>{
+        val response = api.getPlayerPic(username)
 
         return response
     }

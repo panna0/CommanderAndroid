@@ -45,7 +45,7 @@ fun AppNavigation() {
         Scaffold(
             bottomBar = {
 
-                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute !="yourMatches") {
+                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute !="yourMatches" && currentRoute != "createTeams/{roomCode}/{roomName}/{gamemode}") {
                     BottomNavBar(navController = navController)
                 }
             }
@@ -53,7 +53,7 @@ fun AppNavigation() {
 
             NavHost(
                 navController = navController,
-                startDestination = "home/{username}",
+                startDestination = "home/{inGame}",
                 modifier = Modifier.padding(innerPadding),
                 enterTransition = {
                     slideInHorizontally(
@@ -93,9 +93,10 @@ fun AppNavigation() {
                         }
                     )
                 }
-                composable("home/{username}") { backStackEntry ->
-                    val username = backStackEntry.arguments?.getString("username") ?: ""
-                    HomeScreen(username = username, navController = navController)
+                composable("home/{inGame}") { backStackEntry ->
+                    val inGameArg = backStackEntry.arguments?.getString("inGame") ?: "false"
+                    val inGame = inGameArg.toBooleanStrictOrNull() ?: false
+                    HomeScreen(navController = navController, inGame)
                 }
                 composable("profile") {
                     ProfileScreen(navController= navController)
@@ -111,8 +112,13 @@ fun AppNavigation() {
                     YourMatchesScreen(navController= navController)
                 }
 
-                composable("createTeams/{roomCode}") {
-                    CreateTeamsScreen(navController= navController)
+                composable("createTeams/{roomCode}/{roomName}/{gamemode}") { backStackEntry ->
+                    val roomCode = backStackEntry.arguments?.getString("roomCode")
+                    val roomName = backStackEntry.arguments?.getString("roomName")
+                    val gamemode = backStackEntry.arguments?.getString("gamemode")
+                    if (roomCode != null) {
+                        CreateTeamsScreen(navController = navController, roomCode = roomCode, roomName = roomName, gamemode = gamemode)
+                    }
                 }
             }
         }

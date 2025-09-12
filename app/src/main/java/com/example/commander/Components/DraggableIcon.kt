@@ -5,7 +5,9 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -22,39 +24,70 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DraggableIcon(
-    iconId: String,
+    username: String,
+    profilePic: String?,
     onDragStart: (String) -> Unit,
-    onDragEnd: (String?) -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .size(56.dp)
-            .background(Color.LightGray, shape = CircleShape)
-            .dragAndDropSource(
-                drawDragDecoration = {
-                    // drag shadow
-                    drawCircle(color = Color.LightGray)
-                }
-            ) {
-                detectTapGestures(
-                    onLongPress = {
-                        onDragStart(iconId)
-                        startTransfer(
-                            DragAndDropTransferData(
-                                clipData = ClipData.newPlainText("iconId", iconId)
-                            )
-                        )
-                        onDragEnd(null)
+    val initials = username
+        .split(" ")
+        .mapNotNull { it.firstOrNull()?.toString()?.uppercase() }
+        .take(2)
+        .joinToString("")
+
+    Column(verticalArrangement = Arrangement.Center) {
+        Box(
+            modifier = Modifier
+                .size(56.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.outlineVariant)
+                .dragAndDropSource(
+
+                    drawDragDecoration = {
+                        drawCircle(color = Color.LightGray)
+
                     }
+                ) {
+                    detectTapGestures(
+                        onPress = {
+                            onDragStart(username)
+                            startTransfer(
+                                DragAndDropTransferData(
+                                    clipData = ClipData.newPlainText("username", username)
+                                )
+                            )
+                        },
+
+                    )
+                }
+                .padding(4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            if (profilePic.isNullOrBlank()) {
+
+                Text(
+                    text = initials,
+                    style = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    ),
+                    textAlign = TextAlign.Center
+                )
+            } else {
+
+                AsyncImage(
+                    model = profilePic,
+                    contentDescription = "$username profile picture",
+                    modifier = Modifier
+                        .size(56.dp)
+                        .clip(CircleShape)
                 )
             }
-            .padding(4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(iconId, style = MaterialTheme.typography.bodyMedium)
+        }
+        Text(username, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.align(Alignment.CenterHorizontally))
     }
 }
