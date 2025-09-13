@@ -143,9 +143,32 @@ class ApiContext(private val context: Context) {
         return response
     }
 
-    suspend fun getPlayerPic (username: String): Response<String>{
+    suspend fun getPlayerPic (username: String): Response<PlayerPic>{
         val response = api.getPlayerPic(username)
 
+        return response
+    }
+    suspend fun assignPlayer(assignPlayerRequest: AssignPlayerRequest, roomCode: String): Response<AssignPlayerResponse>{
+        val response = api.assignPlayerToTeam(assignPlayerRequest, roomCode)
+
+        return response
+    }
+
+    suspend fun startMatch(roomCode: String): Response<OtpResponse>{
+        val response = api.startMatch(roomCode)
+        Log.d("start match", "Body: ${response}")
+        return response
+    }
+
+    suspend fun joinSession(joinSessionRequest: JoinSessionRequest): Response<OtpResponse>{
+        val response = api.joinSession(joinSessionRequest)
+        Log.d("join session", "Body: ${response}")
+        return response
+    }
+
+    suspend fun getConfigurationFromSession(roomCode: String): Response<Match>{
+        val response = api.getConfigurationFromSession(roomCode)
+        Log.d("get config", "Body: ${response}")
         return response
     }
 }

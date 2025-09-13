@@ -1,4 +1,3 @@
-
 package com.example.commander.Screens
 
 import android.app.Activity
@@ -78,6 +77,7 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
     var players by remember { mutableStateOf(listOf<Player>()) }
     var teams by remember { mutableStateOf(listOf<AddTeamResponse?>()) }
     var assignments by remember { mutableStateOf<Map<String, MutableList<String>>>(emptyMap()) }
+    var errorText by remember { mutableStateOf<String?>(null) }
 
     val apiContext = remember { ApiContext(context) }
     val scope = rememberCoroutineScope()
@@ -88,7 +88,7 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
     }
 
     DisposableEffect(Unit) {
-        onDispose { activity.leaveActiveSession() }
+        onDispose { /* non lasciare la sessione qui */ }
     }
 
     LaunchedEffect(teams) {
@@ -123,17 +123,26 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                     "player_joined" -> {
                         if (msg.username != null) {
                             if (players.none { it.username == msg.username }) {
-                                val response = apiContext.getPlayerPic(msg.username)
-                                if (response.isSuccessful){
-                                    val newPlayer = Player(
-                                        id = msg.player_id,
-                                        username = msg.username,
-                                        status = null,
-                                        profile_image = response.body()
-                                    )
-                                    players = players + newPlayer
-                                }
+                                scope.launch(Dispatchers.IO) {
+                                    try {
+                                        val response = apiContext.getPlayerPic(msg.username)
+                                        Log.d("pic", "chiamata riuscita")
+                                        if (response.isSuccessful) {
 
+                                            val newPlayer = Player(
+                                                id = msg.player_id,
+                                                username = msg.username,
+                                                status = null,
+                                                profile_image = response.body()?.profile_image
+                                            )
+                                            scope.launch(Dispatchers.Main) {
+                                                players = players + newPlayer
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("player_joined", "Error fetching player pic: ${e.localizedMessage}")
+                                    }
+                                }
                             }
                         }
                     }
@@ -150,11 +159,12 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
         }
     }
 
+
     DisposableEffect(sessionSocket) {
         sessionSocket.connect()
         onDispose {
             sessionSocket.disconnect()
-            activity.leaveActiveSession()
+            // NON chiamare activity.leaveActiveSession() qui!
         }
     }
 
@@ -183,13 +193,23 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                 Spacer(Modifier.width(16.dp))
             }
             Spacer(Modifier.height(24.dp))
+            if (errorText != null) {
+                Text(
+                    text = errorText!!,
+                    color = Color.Red,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
             TeamsCarousel(
                 onTeamsLoaded = { loadedTeams -> teams = loadedTeams },
                 teams = teams,
                 assignments = assignments,
                 onDrop = { teamId, username ->
-                    assignments[teamId]?.add(username)
-                    assignments = assignments.toMutableMap()
+                    assignments = assignments.toMutableMap().apply {
+                        val updatedList = (this[teamId] ?: mutableListOf()).toMutableList()
+                        updatedList.add(username)
+                        this[teamId] = updatedList
+                    }
                     draggingIcon = null
                 },
                 roomCode = roomCode,
@@ -206,6 +226,8 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                 onDragStart = { id -> draggingIcon = id },
             )
         }
+
+
 
         Row(
             modifier = Modifier
@@ -224,8 +246,48 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                 Column {
                     Text(text = roomName.toString(), style = MaterialTheme.typography.titleMedium)
                     Text(text = gamemode.toString(), style = MaterialTheme.typography.bodyMedium)
+
                 }
-                Btn(text = "Start", onClick = {})
+                Btn(text = "Start", onClick = {
+                    scope.launch {
+                        // Controllo se tutti i giocatori sono assegnati
+                        val allAssigned = players.all { player ->
+                            assignments.values.any { it.contains(player.username) }
+                        }
+                        if (!allAssigned) {
+                            errorText = "You must assign all players to a team to start."
+                            return@launch
+                        } else {
+                            errorText = null
+                        }
+                        // Solo dopo tutte le assignPlayer, chiama startMatch e naviga se va a buon fine
+                        kotlinx.coroutines.coroutineScope {
+                            assignments.forEach { (teamId, usernames) ->
+                                usernames.forEach { username ->
+                                    launch {
+                                        try {
+                                            val request = com.example.commander.Models.AssignPlayerRequest(player_username = username, team_id = teamId)
+                                            val response = apiContext.assignPlayer(request, roomCode)
+                                            if (response.isSuccessful) {
+                                                Log.d("AssignPlayer", " $username a $teamId: ${response.code()} - ${response.message()}")
+                                            }
+                                        } catch (e: Exception) {
+                                            Log.e("AssignPlayer", "Exception: ${e.localizedMessage}")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        val matchStarted = activity.startMatch()
+                        if (matchStarted) {
+                            navController.navigate("match/$roomCode") {
+                                popUpTo("createTeams/$roomCode/$roomName/$gamemode") { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+                })
+
             }
         }
         if (showBottomSheet) {
@@ -270,12 +332,10 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                                         Icon(Icons.Default.Close, contentDescription = "Remove player from team")
                                     }
                                 }
-
                             }
                         }
                     }
                 }
-
             }
         }
     }

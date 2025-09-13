@@ -2,11 +2,14 @@ package com.example.commander.Network
 
 import com.example.commander.Models.AddTeamRequest
 import com.example.commander.Models.AddTeamResponse
+import com.example.commander.Models.AssignPlayerRequest
+import com.example.commander.Models.AssignPlayerResponse
 import com.example.commander.Models.CheckEmailRequest
 import com.example.commander.Models.CheckEmailResponse
 import com.example.commander.Models.CheckUsernameRequest
 import com.example.commander.Models.CheckUsernameResponse
 import com.example.commander.Models.CreateSessionResponse
+import com.example.commander.Models.JoinSessionRequest
 import com.example.commander.Models.LoginRequest
 import com.example.commander.Models.LoginResponse
 import com.example.commander.Models.Match
@@ -14,6 +17,7 @@ import com.example.commander.Models.MatchesResponse
 import com.example.commander.Models.OtpRequest
 import com.example.commander.Models.OtpResponse
 import com.example.commander.Models.Player
+import com.example.commander.Models.PlayerPic
 import com.example.commander.Models.RegistrationResponse
 import com.example.commander.Models.User
 import com.example.commander.Models.refreshTokenRequest
@@ -54,7 +58,12 @@ interface ApiService {
     @GET("user/{username}/profile-image/")
     suspend fun getPlayerPic(
         @Path("username") username : String
-    ): Response<String>
+    ): Response<PlayerPic>
+
+    @GET("sessions/{roomCode}/configuration/")
+    suspend fun getConfigurationFromSession(
+        @Path("roomCode") roomCode: String
+    ): Response<Match>
 
     @POST("login/")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
@@ -94,4 +103,22 @@ interface ApiService {
     suspend fun createTeams(@Body body: AddTeamRequest,
         @Path("roomCode") roomCode: String
     ): Response<AddTeamResponse>
+
+    @POST("sessions/{roomCode}/assign-player/")
+    suspend fun assignPlayerToTeam(
+        @Body body: AssignPlayerRequest,
+        @Path("roomCode") roomCode: String
+    ): Response<AssignPlayerResponse>
+
+    @POST("sessions/{roomCode}/start/")
+    suspend fun startMatch(
+        @Path("roomCode") roomCode: String
+    ): Response<OtpResponse>
+
+
+    @POST("join-session/")
+    suspend fun joinSession(@Body body: JoinSessionRequest): Response<OtpResponse>
+
+
+
 }
