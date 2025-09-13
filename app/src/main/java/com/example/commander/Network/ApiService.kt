@@ -19,6 +19,7 @@ import com.example.commander.Models.OtpResponse
 import com.example.commander.Models.Player
 import com.example.commander.Models.PlayerPic
 import com.example.commander.Models.RegistrationResponse
+import com.example.commander.Models.TeamInSessionResponse
 import com.example.commander.Models.User
 import com.example.commander.Models.refreshTokenRequest
 import com.example.commander.Models.refreshTokenResponse
@@ -64,6 +65,11 @@ interface ApiService {
     suspend fun getConfigurationFromSession(
         @Path("roomCode") roomCode: String
     ): Response<Match>
+
+    @GET("sessions/{roomCode}/teams/")
+    suspend fun getTeamsFromSession(
+        @Path("roomCode") roomCode: String
+    ): Response<List<TeamInSessionResponse>>
 
     @POST("login/")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
@@ -117,7 +123,9 @@ interface ApiService {
 
 
     @POST("join-session/")
-    suspend fun joinSession(@Body body: JoinSessionRequest): Response<OtpResponse>
+    suspend fun joinSession(
+        @Body body: JoinSessionRequest
+    ): Response<OtpResponse>
 
 
 

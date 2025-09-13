@@ -1,5 +1,8 @@
 package com.example.commander.Components
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -15,10 +18,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.commander.MainActivity
+import com.example.commander.Screens.findActivity
 
 data class NavItem(
     val label: String,
@@ -26,10 +32,19 @@ data class NavItem(
     val icon: @Composable () -> Unit
 )
 
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}
+
 @Composable
 fun BottomNavBar(navController: NavHostController) {
+    val context = LocalContext.current
+    val activity = context.findActivity() as? MainActivity ?: return
+    val route = if (activity.inSession){"match/{${activity.currentRoomCode}}"}else{"home"}
     val items = listOf(
-        NavItem("Home", "home/{username}") {
+        NavItem("Home", route) {
             Icon(
                 Icons.Default.Home,
                 contentDescription = "Home"

@@ -171,4 +171,10 @@ class ApiContext(private val context: Context) {
         Log.d("get config", "Body: ${response}")
         return response
     }
+
+    suspend fun getTeamsInSession(roomCode: String): Response<List<TeamInSessionResponse>>{
+        val response = api.getTeamsFromSession(roomCode)
+        Log.d("get teams", "Body: ${response}")
+        return response
+    }
 }

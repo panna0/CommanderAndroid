@@ -59,17 +59,22 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 fun Context.findActivity(): Activity? = when (this) {
     is Activity -> this
     is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("ContextCastToActivity", "CoroutineCreationDuringComposition")
 @Composable
-fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: String?, gamemode: String?) {
+fun CreateTeamsScreen(
+    navController: NavController,
+    roomCode: String,
+    roomName: String?,
+    gamemode: String?,
+) {
     val context = LocalContext.current
     val activity = context.findActivity() as? MainActivity ?: return
     var showBottomSheet by remember { mutableStateOf(false) }
@@ -81,6 +86,28 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
 
     val apiContext = remember { ApiContext(context) }
     val scope = rememberCoroutineScope()
+
+    var roomDuration by remember { mutableIntStateOf(0) }
+
+
+
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = apiContext.getConfigurationFromSession(roomCode)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    roomDuration = it.match_duration_minutes
+                }
+            }
+        }catch (e: Exception){
+            Log.e("WaitAdminScreen", "Error fetching room configuration: ${e.message}")
+        }}
+
+
+
+
+
 
     BackHandler {
         activity.leaveActiveSession()
@@ -128,7 +155,6 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                                         val response = apiContext.getPlayerPic(msg.username)
                                         Log.d("pic", "chiamata riuscita")
                                         if (response.isSuccessful) {
-
                                             val newPlayer = Player(
                                                 id = msg.player_id,
                                                 username = msg.username,
@@ -159,7 +185,6 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
         }
     }
 
-
     DisposableEffect(sessionSocket) {
         sessionSocket.connect()
         onDispose {
@@ -168,12 +193,12 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
         }
     }
 
-
-
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(Modifier
-            .fillMaxSize()
-            .padding(16.dp)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -189,7 +214,11 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                     icon = Icons.Default.ArrowBackIosNew,
                     contentDescription = "Torna indietro"
                 )
-                Text(text = "Create Teams", fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
+                Text(
+                    text = "Create Teams",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
+                )
                 Spacer(Modifier.width(16.dp))
             }
             Spacer(Modifier.height(24.dp))
@@ -219,15 +248,17 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                 },
             )
             Spacer(Modifier.height(16.dp))
-            Text(text = "Players", fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
+            Text(
+                text = "Players",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp
+            )
             Spacer(Modifier.height(8.dp))
             IconGrid(
                 icons = players.filter { it.username !in assignedIcons && it.username != draggingIcon },
                 onDragStart = { id -> draggingIcon = id },
             )
         }
-
-
 
         Row(
             modifier = Modifier
@@ -244,52 +275,78 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(text = roomName.toString(), style = MaterialTheme.typography.titleMedium)
-                    Text(text = gamemode.toString(), style = MaterialTheme.typography.bodyMedium)
-
+                    Text(
+                        text = roomName.toString(),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = gamemode.toString(),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
                 Btn(text = "Start", onClick = {
                     scope.launch {
-                        // Controllo se tutti i giocatori sono assegnati
-                        val allAssigned = players.all { player ->
-                            assignments.values.any { it.contains(player.username) }
-                        }
-                        if (!allAssigned) {
-                            errorText = "You must assign all players to a team to start."
-                            return@launch
-                        } else {
-                            errorText = null
-                        }
-                        // Solo dopo tutte le assignPlayer, chiama startMatch e naviga se va a buon fine
-                        kotlinx.coroutines.coroutineScope {
-                            assignments.forEach { (teamId, usernames) ->
-                                usernames.forEach { username ->
-                                    launch {
-                                        try {
-                                            val request = com.example.commander.Models.AssignPlayerRequest(player_username = username, team_id = teamId)
-                                            val response = apiContext.assignPlayer(request, roomCode)
-                                            if (response.isSuccessful) {
-                                                Log.d("AssignPlayer", " $username a $teamId: ${response.code()} - ${response.message()}")
+                        try {
+                            Log.d("CreateTeamsScreen", "Start premuto. roomCode: $roomCode, roomDuration: $roomDuration, players: ${players.size}, assignments: $assignments")
+                            val allAssigned = players.all { player ->
+                                assignments.values.any { it.contains(player.username) }
+                            }
+                            if (!allAssigned) {
+                                errorText = "You must assign all players to a team to start."
+                                return@launch
+                            } else {
+                                errorText = null
+                            }
+
+                            kotlinx.coroutines.coroutineScope {
+                                assignments.forEach { (teamId, usernames) ->
+                                    usernames.forEach { username ->
+                                        launch {
+                                            try {
+                                                val request =
+                                                    com.example.commander.Models.AssignPlayerRequest(
+                                                        player_username = username,
+                                                        team_id = teamId
+                                                    )
+                                                val response =
+                                                    apiContext.assignPlayer(request, roomCode)
+                                                if (response.isSuccessful) {
+                                                    Log.d(
+                                                        "AssignPlayer",
+                                                        " $username a $teamId: ${response.code()} - ${response.message()}"
+                                                    )
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.e(
+                                                    "AssignPlayer",
+                                                    "Exception: ${e.localizedMessage}"
+                                                )
                                             }
-                                        } catch (e: Exception) {
-                                            Log.e("AssignPlayer", "Exception: ${e.localizedMessage}")
                                         }
                                     }
                                 }
                             }
-                        }
-                        val matchStarted = activity.startMatch()
-                        if (matchStarted) {
-                            navController.navigate("match/$roomCode") {
-                                popUpTo("createTeams/$roomCode/$roomName/$gamemode") { inclusive = true }
-                                launchSingleTop = true
+
+                            val matchStarted = activity.startMatch()
+                            if (matchStarted) {
+                                Log.d("CreateTeamsScreen", "Navigo verso match/$roomCode")
+                                activity.matchStartTime = java.time.OffsetDateTime.now()
+                                navController.navigate("match/$roomCode") {
+                                    popUpTo("createTeams/$roomCode/$roomName/$gamemode") { inclusive = true }
+                                    launchSingleTop = true
+                                }
+                            } else {
+                                errorText = "Impossibile avviare la partita."
                             }
+                        } catch (e: Exception) {
+                            errorText = "Crash in start: ${e.localizedMessage}"
+                            Log.e("CreateTeamsScreen", "Crash in start: ${e.localizedMessage}")
                         }
                     }
                 })
-
             }
         }
+
         if (showBottomSheet) {
             ModalBottomSheet(
                 onDismissRequest = { showBottomSheet = false },
@@ -298,30 +355,47 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                 val selectedTeam = teams.getOrNull(teamView)
                 val playersInSelectedTeam = assignments[selectedTeam?.id] ?: emptyList()
 
-                Column(modifier = Modifier.padding(16.dp).fillMaxSize()) {
-                    Text(text = "${selectedTeam?.team_name}", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = if (selectedTeam?.team_name == "Team 1"){
-                        Color(0xFF4260F5)
-                    } else{Color(0xFFF54251)})
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .fillMaxSize()
+                ) {
+                    Text(
+                        text = "${selectedTeam?.team_name}",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp,
+                        color = if (selectedTeam?.team_name == "Team 1") {
+                            Color(0xFF4260F5)
+                        } else {
+                            Color(0xFFF54251)
+                        }
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Column (){
+                    Column {
                         if (playersInSelectedTeam.isEmpty()) {
                             Text("No players assigned to this team yet.")
                         } else {
-
                             playersInSelectedTeam.forEach { username ->
-
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.outline, RoundedCornerShape(20)),
+                                        .background(
+                                            MaterialTheme.colorScheme.outline,
+                                            RoundedCornerShape(20)
+                                        ),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Text(text = username, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(8.dp))
+                                    Text(
+                                        text = username,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
                                     IconButton(
                                         onClick = {
                                             selectedTeam?.id?.let { teamId ->
-                                                val currentPlayers = assignments[teamId]?.toMutableList()
+                                                val currentPlayers =
+                                                    assignments[teamId]?.toMutableList()
                                                 currentPlayers?.remove(username)
                                                 assignments = assignments.toMutableMap().apply {
                                                     this[teamId] = currentPlayers ?: mutableListOf()
@@ -329,7 +403,10 @@ fun CreateTeamsScreen(navController: NavController, roomCode: String, roomName: 
                                             }
                                         }
                                     ) {
-                                        Icon(Icons.Default.Close, contentDescription = "Remove player from team")
+                                        Icon(
+                                            Icons.Default.Close,
+                                            contentDescription = "Remove player from team"
+                                        )
                                     }
                                 }
                             }

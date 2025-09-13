@@ -1,3 +1,5 @@
+package com.example.commander.Screens
+
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +25,7 @@ import com.example.commander.Components.Btn
 import com.example.commander.Components.CustomInput
 import com.example.commander.Components.ScrollableRowsLazy
 import com.example.commander.MainActivity
+import com.example.commander.Models.WebSocketMessage
 import com.example.commander.Storage.TokenManager
 import com.example.commander.Network.ApiContext
 import com.example.commander.Models.refreshTokenRequest
@@ -36,7 +39,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(username: String, navController: NavHostController) {
+fun HomeScreen( navController: NavHostController) {
     val context = LocalContext.current
     val tokenManager = remember { TokenManager(context) }
     val scope = rememberCoroutineScope()
@@ -56,15 +59,28 @@ fun HomeScreen(username: String, navController: NavHostController) {
     var roomDuration by remember { mutableIntStateOf(0) }
 
     var sessionSocket: SessionWebSocket? by remember { mutableStateOf(null) }
-    var socketMessages by remember { mutableStateOf(listOf<String>()) }
-
+    var socketMessages by remember { mutableStateOf(listOf<WebSocketMessage>()) }
 
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
 
-    fun joinRoom() {
-        // TODO: implementa join con roomCode
+    suspend fun joinRoom() {
+        val request = com.example.commander.Models.JoinSessionRequest(session_room_code = roomCode2)
+        // Log del token attuale
+        val currentAccessToken = tokenManager.accessToken.firstOrNull()
+        Log.d("joinRoom", "Access token usato: $currentAccessToken")
+        Log.d("joinRoom", "Body della richiesta: $request")
+        try {
+            val response = apiContext.joinSession(request)
+
+            navController.navigate("wait_admin_screen/${roomCode2}") {
+                popUpTo("home") { inclusive = false }
+            }
+        }catch (e: Exception){
+            error = "Errore durante il join: ${e.localizedMessage}"
+            return
+        }
     }
 
     fun getGamemodeicon(gamemode: String): Int {
@@ -91,7 +107,7 @@ fun HomeScreen(username: String, navController: NavHostController) {
 
             sessionSocket = SessionWebSocket(roomCode) { msg ->
                 socketMessages = socketMessages + msg
-                Log.d("webSocket" ,"message:$msg" )
+                Log.d("webSocket", "message:$msg")
             }
             sessionSocket?.connect()
         }
@@ -105,7 +121,6 @@ fun HomeScreen(username: String, navController: NavHostController) {
         }
     }
 
-    // 🔹 GESTIONE DEL PULL TO REFRESH
     LaunchedEffect(isRefreshing) {
         if (isRefreshing) {
             try {
@@ -146,20 +161,20 @@ fun HomeScreen(username: String, navController: NavHostController) {
                     } else {
                         tokenManager.clearTokens()
                         navController.navigate("login") {
-                            popUpTo("home/$username") { inclusive = true }
+                            popUpTo("home") { inclusive = true }
                         }
                     }
                 } else {
                     tokenManager.clearTokens()
                     navController.navigate("login") {
-                        popUpTo("home/$username") { inclusive = true }
+                        popUpTo("home") { inclusive = true }
                     }
                 }
             } catch (e: Exception) {
                 error = "Errore chiamata getUser: ${e.localizedMessage}"
                 tokenManager.clearTokens()
                 navController.navigate("login") {
-                    popUpTo("home/$username") { inclusive = true }
+                    popUpTo("home") { inclusive = true }
                 }
             }
         } else if (!currentRefreshToken.isNullOrEmpty()) {
@@ -172,237 +187,248 @@ fun HomeScreen(username: String, navController: NavHostController) {
                 } else {
                     tokenManager.clearTokens()
                     navController.navigate("login") {
-                        popUpTo("home/$username") { inclusive = true }
+                        popUpTo("home") { inclusive = true }
                     }
                 }
             } catch (e: Exception) {
                 error = "Errore durante il refresh: ${e.localizedMessage}"
                 tokenManager.clearTokens()
                 navController.navigate("login") {
-                    popUpTo("home/$username") { inclusive = true }
+                    popUpTo("home") { inclusive = true }
                 }
             }
         } else {
             navController.navigate("login") {
-                popUpTo("home/$username") { inclusive = true }
+                popUpTo("home") { inclusive = true }
             }
         }
 
         isLoading = false
     }
 
-    // 🔹 UI con supporto al pull-to-refresh
-    PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = { isRefreshing = true }
-    ) {
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = "Commander",
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary
-                )
 
-                Spacer(modifier = Modifier.height(16.dp))
 
+
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = { isRefreshing = true }
+        ) {
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp),
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CustomInput(
-                        value = roomCode2,
-                        onValueChange = { roomCode2 = it },
-                        label = "Room Code"
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = "Commander",
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Btn(
-                        onClick = { joinRoom() },
-                        text = "Join Room",
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(64.dp))
-                Text(
-                    text = "Your Rooms",
-                    modifier = Modifier
-                        .align(Alignment.Start)
-                        .padding(horizontal = 20.dp),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                ScrollableRowsLazy { id ->
-                    scope.launch { startRoom(id) }
-                }
-
-                if (error != null) {
-                    Spacer(Modifier.height(16.dp))
-                    Text(error!!, color = MaterialTheme.colorScheme.error)
-                }
-
-
-                if (showBottomSheet) {
-                    ModalBottomSheet(
-                        onDismissRequest = { scope.launch { leaveRoom() } },
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        sheetState = sheetState
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(32.dp)
-                                .heightIn(min = 700.dp),
+                        CustomInput(
+                            value = roomCode2,
+                            onValueChange = { roomCode2 = it },
+                            label = "Room Code"
+                        )
+                        Spacer(modifier = Modifier.height(32.dp))
+                        Btn(
+                            onClick = { scope.launch { joinRoom() } },
+                            text = "Join Room",
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(64.dp))
+                    Text(
+                        text = "Your Rooms",
+                        modifier = Modifier
+                            .align(Alignment.Start)
+                            .padding(horizontal = 20.dp),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    ScrollableRowsLazy { id ->
+                        scope.launch { startRoom(id) }
+                    }
+
+                    if (error != null) {
+                        Spacer(Modifier.height(16.dp))
+                        Text(error!!, color = MaterialTheme.colorScheme.error)
+                    }
+
+
+                    if (showBottomSheet) {
+                        ModalBottomSheet(
+                            onDismissRequest = { scope.launch { leaveRoom() } },
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            sheetState = sheetState
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.fillMaxSize()
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(32.dp)
+                                    .heightIn(min = 700.dp),
                             ) {
-                                Text(
-                                    text = roomName,
-                                    fontSize = 30.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(70.dp)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.outline,
-                                            RoundedCornerShape(16.dp)
-                                        )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier.fillMaxSize()
                                 ) {
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Image(
-                                        painter = painterResource(id = getGamemodeicon(roomGamemode)),
-                                        contentDescription = "Gamemode Icon",
-                                        modifier = Modifier.size(40.dp)
+                                    Text(
+                                        text = roomName,
+                                        fontSize = 30.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.secondary
                                     )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            "Gamemode",
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Light,
-                                            color = MaterialTheme.colorScheme.secondary
-                                        )
-                                        Text(
-                                            roomGamemode,
-                                            fontSize = 18.sp,
-                                            color = MaterialTheme.colorScheme.secondary
-                                        )
-                                    }
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(70.dp)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.outline,
-                                            RoundedCornerShape(16.dp)
-                                        )
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Person,
-                                        contentDescription = "players",
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier
-                                            .padding(16.dp, 0.dp)
-                                            .size(40.dp),
-                                        tint = MaterialTheme.colorScheme.secondary
-                                    )
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            "Max players",
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Light,
-                                            color = MaterialTheme.colorScheme.secondary
+                                            .fillMaxWidth()
+                                            .height(70.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.outline,
+                                                RoundedCornerShape(16.dp)
+                                            )
+                                    ) {
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Image(
+                                            painter = painterResource(
+                                                id = getGamemodeicon(
+                                                    roomGamemode
+                                                )
+                                            ),
+                                            contentDescription = "Gamemode Icon",
+                                            modifier = Modifier.size(40.dp)
                                         )
-                                        Text(
-                                            "$roomMaxPlayers players",
-                                            fontSize = 18.sp,
-                                            color = MaterialTheme.colorScheme.secondary
-                                        )
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                "Gamemode",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Light,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                            Text(
+                                                roomGamemode,
+                                                fontSize = 18.sp,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                        }
                                     }
-                                }
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(70.dp)
-                                        .background(
-                                            color = MaterialTheme.colorScheme.outline,
-                                            RoundedCornerShape(16.dp)
-                                        )
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.AccessTime,
-                                        contentDescription = "clock",
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier
-                                            .padding(16.dp, 0.dp)
-                                            .size(40.dp),
-                                        tint = MaterialTheme.colorScheme.secondary
-                                    )
-                                    Column(modifier = Modifier.fillMaxWidth()) {
-                                        Text(
-                                            "Durata",
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Light,
-                                            color = MaterialTheme.colorScheme.secondary
+                                            .fillMaxWidth()
+                                            .height(70.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.outline,
+                                                RoundedCornerShape(16.dp)
+                                            )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Person,
+                                            contentDescription = "players",
+                                            modifier = Modifier
+                                                .padding(16.dp, 0.dp)
+                                                .size(40.dp),
+                                            tint = MaterialTheme.colorScheme.secondary
                                         )
-                                        Text(
-                                            "$roomDuration minuti",
-                                            fontSize = 18.sp,
-                                            color = MaterialTheme.colorScheme.secondary
-                                        )
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                "Max players",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Light,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                            Text(
+                                                "$roomMaxPlayers players",
+                                                fontSize = 18.sp,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                        }
                                     }
-                                }
-
-                                Spacer(modifier = Modifier.height(24.dp))
-                                Text(
-                                    text = "Room code:",
-                                    fontSize = 20.sp
-                                )
-                                Text(
-                                    text = roomCode,
-                                    fontSize = 50.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                                Spacer(modifier = Modifier.height(32.dp))
-                                Btn(
-                                    text = "Create Teams",
-                                    shape = AppShapes.medium,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = {
-                                        (context as MainActivity).setActiveSession(roomCode, sessionSocket!!)
-                                        navController.navigate("createTeams/$roomCode")
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(70.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.outline,
+                                                RoundedCornerShape(16.dp)
+                                            )
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.AccessTime,
+                                            contentDescription = "clock",
+                                            modifier = Modifier
+                                                .padding(16.dp, 0.dp)
+                                                .size(40.dp),
+                                            tint = MaterialTheme.colorScheme.secondary
+                                        )
+                                        Column(modifier = Modifier.fillMaxWidth()) {
+                                            Text(
+                                                "Durata",
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Light,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                            Text(
+                                                "$roomDuration minuti",
+                                                fontSize = 18.sp,
+                                                color = MaterialTheme.colorScheme.secondary
+                                            )
+                                        }
                                     }
 
-                                )
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                    Text(
+                                        text = "Room code:",
+                                        fontSize = 20.sp
+                                    )
+                                    Text(
+                                        text = roomCode,
+                                        fontSize = 50.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.secondary
+                                    )
+                                    Spacer(modifier = Modifier.height(32.dp))
+                                    Btn(
+                                        text = "Create Teams",
+                                        shape = AppShapes.medium,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = {
+                                            (context as MainActivity).setActiveSession(
+                                                roomCode,
+                                                sessionSocket!!
+                                            )
+
+                                            navController.navigate("createTeams/$roomCode/$roomName/$roomGamemode")
+                                        }
+
+                                    )
+                                }
                             }
                         }
                     }
@@ -410,4 +436,3 @@ fun HomeScreen(username: String, navController: NavHostController) {
             }
         }
     }
-}

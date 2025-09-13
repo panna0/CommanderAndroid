@@ -109,7 +109,7 @@ fun LoginScreen(navController: NavHostController, users: List<User>) {
                                         tokenManager.saveTokens(it.access, it.refresh)
                                         Log.d("Login", "Token salvati: access=${it.access}, refresh=${it.refresh}")
 
-                                        navController.navigate("home/$username") {
+                                        navController.navigate("home") {
                                             popUpTo("login") { inclusive = true }
                                         }
                                     }

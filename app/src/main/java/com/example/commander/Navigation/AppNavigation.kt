@@ -1,6 +1,7 @@
 package com.example.commander.Navigation
 
-import HomeScreen
+
+import MatchScreen
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -14,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -23,18 +25,20 @@ import com.example.commander.Components.BottomNavBar
 import com.example.commander.Models.User
 import com.example.commander.Screens.CreateTeamsScreen
 import com.example.commander.Screens.EditProfileScreen
+import com.example.commander.Screens.HomeScreen
 
 import com.example.commander.Screens.LoginScreen
 import com.example.commander.Screens.MapScreen
 import com.example.commander.Screens.ProfileScreen
 import com.example.commander.Screens.RegisterScreen
+import com.example.commander.Screens.WaitAdminScreen
 import com.example.commander.Screens.YourMatchesScreen
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val users = remember { mutableStateListOf<User>() }
-
+    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -44,16 +48,14 @@ fun AppNavigation() {
 
         Scaffold(
             bottomBar = {
-
-                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute !="yourMatches" && currentRoute != "createTeams/{roomCode}/{roomName}/{gamemode}") {
+                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute != "yourMatches" && currentRoute != "createTeams/{roomCode}/{roomName}/{gamemode}") {
                     BottomNavBar(navController = navController)
                 }
             }
         ) { innerPadding ->
-
             NavHost(
                 navController = navController,
-                startDestination = "home/{inGame}",
+                startDestination = "home",
                 modifier = Modifier.padding(innerPadding),
                 enterTransition = {
                     slideInHorizontally(
@@ -93,10 +95,8 @@ fun AppNavigation() {
                         }
                     )
                 }
-                composable("home/{inGame}") { backStackEntry ->
-                    val inGameArg = backStackEntry.arguments?.getString("inGame") ?: "false"
-                    val inGame = inGameArg.toBooleanStrictOrNull() ?: false
-                    HomeScreen(navController = navController, inGame)
+                composable("home") {
+                    HomeScreen(navController = navController)
                 }
                 composable("profile") {
                     ProfileScreen(navController= navController)
@@ -107,11 +107,16 @@ fun AppNavigation() {
                 composable("editProfile") {
                     EditProfileScreen(navController= navController)
                 }
-
                 composable("yourMatches") {
                     YourMatchesScreen(navController= navController)
                 }
+                composable("match/{roomCode}"){ backStackEntry ->
+                    val roomCode = backStackEntry.arguments?.getString("roomCode")
 
+                    if (roomCode != null) {
+                        MatchScreen(roomCode = roomCode, navController = navController)
+                    }
+                }
                 composable("createTeams/{roomCode}/{roomName}/{gamemode}") { backStackEntry ->
                     val roomCode = backStackEntry.arguments?.getString("roomCode")
                     val roomName = backStackEntry.arguments?.getString("roomName")
@@ -120,6 +125,14 @@ fun AppNavigation() {
                         CreateTeamsScreen(navController = navController, roomCode = roomCode, roomName = roomName, gamemode = gamemode)
                     }
                 }
+                composable("wait_admin_screen/{roomCode}"){ backStackEntry ->
+                    val roomCode = backStackEntry.arguments?.getString("roomCode")
+
+                    if (roomCode != null) {
+                        WaitAdminScreen(roomCode = roomCode, navController = navController)
+                    }
+                }
+
             }
         }
     }
