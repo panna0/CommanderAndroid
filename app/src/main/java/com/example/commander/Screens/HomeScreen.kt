@@ -415,7 +415,7 @@ fun HomeScreen( navController: NavHostController) {
                                     )
                                     Spacer(modifier = Modifier.height(32.dp))
                                     Btn(
-                                        text = "Create Teams",
+                                        text = if(roomGamemode == "Free for All"){ "Join Game"} else{"Create Teams"},
                                         shape = AppShapes.medium,
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = {
@@ -423,8 +423,11 @@ fun HomeScreen( navController: NavHostController) {
                                                 roomCode,
                                                 sessionSocket!!
                                             )
-
+                                            if(roomGamemode == "Free for All")
+                                                navController.navigate("waitingPlayers/$roomCode/$roomName/$roomGamemode")
+                                            else{
                                             navController.navigate("createTeams/$roomCode/$roomName/$roomGamemode")
+                                            }
                                         }
 
                                     )
