@@ -53,6 +53,7 @@ import com.example.commander.Models.AddTeamResponse
 import com.example.commander.Models.Player
 import com.example.commander.Network.ApiContext
 import com.example.commander.Network.SessionWebSocket
+import com.example.commander.findActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.material.icons.filled.Close
@@ -61,11 +62,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 
-fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
-}
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("ContextCastToActivity", "CoroutineCreationDuringComposition")
 @Composable
@@ -114,9 +110,7 @@ fun CreateTeamsScreen(
         navController.popBackStack()
     }
 
-    DisposableEffect(Unit) {
-        onDispose { /* non lasciare la sessione qui */ }
-    }
+
 
     LaunchedEffect(teams) {
         if (teams.isNotEmpty()) {
@@ -158,7 +152,7 @@ fun CreateTeamsScreen(
                                             val newPlayer = Player(
                                                 id = msg.player_id,
                                                 username = msg.username,
-                                                status = null,
+                                                player_status = null,
                                                 profile_image = response.body()?.profile_image
                                             )
                                             scope.launch(Dispatchers.Main) {
@@ -189,7 +183,6 @@ fun CreateTeamsScreen(
         sessionSocket.connect()
         onDispose {
             sessionSocket.disconnect()
-            // NON chiamare activity.leaveActiveSession() qui!
         }
     }
 
