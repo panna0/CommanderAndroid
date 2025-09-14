@@ -32,6 +32,7 @@ import com.example.commander.Screens.MapScreen
 import com.example.commander.Screens.ProfileScreen
 import com.example.commander.Screens.RegisterScreen
 import com.example.commander.Screens.WaitAdminScreen
+import com.example.commander.Screens.WaitingPlayerScreen
 import com.example.commander.Screens.YourMatchesScreen
 
 @Composable
@@ -48,7 +49,7 @@ fun AppNavigation() {
 
         Scaffold(
             bottomBar = {
-                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute != "yourMatches" && currentRoute != "createTeams/{roomCode}/{roomName}/{gamemode}") {
+                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute != "yourMatches" && currentRoute != "createTeams/{roomCode}/{roomName}/{gamemode}" && currentRoute != "waitingPlayers/{roomCode}/{roomName}/{gamemode}") {
                     BottomNavBar(navController = navController)
                 }
             }
@@ -123,6 +124,14 @@ fun AppNavigation() {
                     val gamemode = backStackEntry.arguments?.getString("gamemode")
                     if (roomCode != null) {
                         CreateTeamsScreen(navController = navController, roomCode = roomCode, roomName = roomName, gamemode = gamemode)
+                    }
+                }
+                composable("waitingPlayers/{roomCode}/{roomName}/{gamemode}") { backStackEntry ->
+                    val roomCode = backStackEntry.arguments?.getString("roomCode")
+                    val roomName = backStackEntry.arguments?.getString("roomName")
+                    val gamemode = backStackEntry.arguments?.getString("gamemode")
+                    if (roomCode != null) {
+                        WaitingPlayerScreen(navController = navController, roomCode = roomCode, roomName = roomName, gamemode = gamemode)
                     }
                 }
                 composable("wait_admin_screen/{roomCode}"){ backStackEntry ->

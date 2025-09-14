@@ -24,19 +24,13 @@ import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.commander.MainActivity
-import com.example.commander.Screens.findActivity
+import com.example.commander.findActivity
 
 data class NavItem(
     val label: String,
     val route: String,
     val icon: @Composable () -> Unit
 )
-
-fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
-}
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
