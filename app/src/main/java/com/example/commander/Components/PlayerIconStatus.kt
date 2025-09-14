@@ -25,9 +25,14 @@ import coil.compose.AsyncImage
 fun PlayerIconStatus(
     nickname: String,
     imageUrl: String?,
-    isAlive: Boolean,
+    playerStatus: String?,
     size: Dp = 56.dp
 ) {
+    val statusColor = when {
+        playerStatus?.equals("Eliminated", ignoreCase = true) == true -> Color(0xFFF44336) // rosso
+        playerStatus?.equals("Alive", ignoreCase = true) == true -> Color(0xFF4CAF50) // verde
+        else -> Color.Gray
+    }
     Box(
         modifier = Modifier.size(size),
         contentAlignment = Alignment.BottomEnd
@@ -61,14 +66,16 @@ fun PlayerIconStatus(
             }
         }
         // Pallino status
-        Box(
-            modifier = Modifier
-                .size(size / 4)
-                .offset(x = 1.dp, y = 1.dp)
-                .clip(CircleShape)
-                .background(if (isAlive) Color(0xFFF44336) else Color(0xFF4CAF50))
-                .border(1.dp, Color.White, CircleShape)
-        )
+        if(playerStatus != "Waiting"){
+            Box(
+                modifier = Modifier
+                    .size(size / 4)
+                    .offset(x = 1.dp, y = 1.dp)
+                    .clip(CircleShape)
+                    .background(statusColor)
+                    .border(1.dp, Color.White, CircleShape)
+            )
+        }
+
     }
 }
-
