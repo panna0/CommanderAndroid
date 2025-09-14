@@ -3,6 +3,7 @@ package com.example.commander.Network
 import android.content.Context
 import android.util.Log
 import com.example.commander.Models.*
+import kotlinx.coroutines.flow.firstOrNull
 import retrofit2.Response
 
 class ApiContext(private val context: Context) {
@@ -175,6 +176,18 @@ class ApiContext(private val context: Context) {
     suspend fun getTeamsInSession(roomCode: String): Response<List<TeamInSessionResponse>>{
         val response = api.getTeamsFromSession(roomCode)
         Log.d("get teams", "Body: ${response}")
+        return response
+    }
+
+    suspend fun changeMyStatus(changeStatusRequest: ChangeStatusRequest, roomCode: String): Response<OtpResponse> {
+        // Recupera il token attuale
+        val tokenManager = com.example.commander.Storage.TokenManager(context)
+        val accessToken = kotlinx.coroutines.runBlocking { tokenManager.accessToken.firstOrNull() }
+        Log.d("change status", "Token usato: $accessToken")
+        Log.d("change status", "Body inviato: $changeStatusRequest")
+        val response = api.changeMyStatus(roomCode = roomCode, body = changeStatusRequest)
+        Log.d("change status", "Response code: ${response.code()} - ${response.message()}")
+        Log.d("change status", "ErrorBody: ${response.errorBody()?.string()}")
         return response
     }
 }

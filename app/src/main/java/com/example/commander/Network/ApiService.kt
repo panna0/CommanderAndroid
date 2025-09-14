@@ -4,6 +4,7 @@ import com.example.commander.Models.AddTeamRequest
 import com.example.commander.Models.AddTeamResponse
 import com.example.commander.Models.AssignPlayerRequest
 import com.example.commander.Models.AssignPlayerResponse
+import com.example.commander.Models.ChangeStatusRequest
 import com.example.commander.Models.CheckEmailRequest
 import com.example.commander.Models.CheckEmailResponse
 import com.example.commander.Models.CheckUsernameRequest
@@ -125,6 +126,12 @@ interface ApiService {
     @POST("join-session/")
     suspend fun joinSession(
         @Body body: JoinSessionRequest
+    ): Response<OtpResponse>
+
+    @POST("session/{roomCode}/me/status/")
+    suspend fun changeMyStatus(
+        @Path("roomCode") roomCode: String,
+        @Body body: ChangeStatusRequest
     ): Response<OtpResponse>
 
 
