@@ -12,4 +12,6 @@ data class User(
     val password2: String,
     val username: String,
     var profile_image: File? = null
-)
+) {
+
+}
