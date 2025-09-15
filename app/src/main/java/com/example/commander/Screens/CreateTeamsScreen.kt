@@ -107,7 +107,9 @@ fun CreateTeamsScreen(
 
     BackHandler {
         activity.leaveActiveSession()
-        navController.popBackStack()
+        navController.navigate("home") {
+            popUpTo("createTeams/$roomCode/$roomName/$gamemode") { inclusive = true }
+        }
     }
 
 
@@ -201,8 +203,9 @@ fun CreateTeamsScreen(
                     tint = MaterialTheme.colorScheme.secondary,
                     onClick = {
                         activity.leaveActiveSession()
-                        navController.popBackStack()
-                        navController.popBackStack()
+                        navController.navigate("home") {
+                            popUpTo("createTeams/$roomCode/$roomName/$gamemode") { inclusive = true }
+                        }
                     },
                     icon = Icons.Default.ArrowBackIosNew,
                     contentDescription = "Torna indietro"
@@ -239,6 +242,7 @@ fun CreateTeamsScreen(
                     showBottomSheet = true
                     teamView = index
                 },
+                gamemode = gamemode.toString()
             )
             Spacer(Modifier.height(16.dp))
             Text(

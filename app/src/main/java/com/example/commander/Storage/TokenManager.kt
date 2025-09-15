@@ -17,7 +17,7 @@ class TokenManager(private val context: Context) {
         private val REFRESH_TOKEN = stringPreferencesKey("refresh")
     }
 
-    // Salvataggio token
+
     suspend fun saveTokens(access: String, refresh: String) {
         context.dataStore.edit { prefs ->
             prefs[ACCESS_TOKEN] = access
@@ -25,12 +25,12 @@ class TokenManager(private val context: Context) {
         }
     }
 
-    // Recupero access token
+
     val accessToken: Flow<String?> = context.dataStore.data.map { prefs ->
         prefs[ACCESS_TOKEN]
     }
 
-    // Recupero refresh token
+
     val refreshToken: Flow<String?> = context.dataStore.data.map { prefs ->
         prefs[REFRESH_TOKEN]
     }

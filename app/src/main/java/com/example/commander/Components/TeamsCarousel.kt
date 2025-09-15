@@ -33,14 +33,19 @@ fun TeamsCarousel(
     onShowBottomSheet: (Int) -> Unit,
     onDrop: (String, String) -> Unit,
     onTeamsLoaded: (List<AddTeamResponse?>) -> Unit,
-
+    gamemode: String
     ) {
     val context = LocalContext.current
     val apiContext = remember { ApiContext(context) }
     var teams by remember { mutableStateOf<List<AddTeamResponse?>>(emptyList()) }
+    var teamsEs by remember { mutableStateOf<List<String>>(emptyList()) }
 
-    LaunchedEffect(Unit) {
-        val teamsEs = listOf("Team 1", "Team 2")
+    LaunchedEffect(gamemode) {
+        if (gamemode == "Bomb Defuse"){
+            teamsEs = listOf("Defenders", "Attackers")
+        }else{
+            teamsEs = listOf("Blue", "Red")
+        }
         val newTeams = mutableListOf<AddTeamResponse?>()
         for (x in teamsEs) {
             try {

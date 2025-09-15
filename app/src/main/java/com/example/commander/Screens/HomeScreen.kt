@@ -15,6 +15,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.commander.Components.Btn
 import com.example.commander.Components.CustomInput
+import com.example.commander.Components.RoomCodeRow
 import com.example.commander.Components.ScrollableRowsLazy
 import com.example.commander.MainActivity
 import com.example.commander.Models.WebSocketMessage
@@ -285,13 +287,11 @@ fun HomeScreen( navController: NavHostController) {
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxSize()
                                     .padding(32.dp)
-                                    .heightIn(min = 700.dp),
+                                    .heightIn(min = 500.dp),
                             ) {
                                 Column(
                                     horizontalAlignment = Alignment.CenterHorizontally,
-                                    modifier = Modifier.fillMaxSize()
                                 ) {
                                     Text(
                                         text = roomName,
@@ -317,6 +317,7 @@ fun HomeScreen( navController: NavHostController) {
                                                     roomGamemode
                                                 )
                                             ),
+                                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.secondary),
                                             contentDescription = "Gamemode Icon",
                                             modifier = Modifier.size(40.dp)
                                         )
@@ -407,12 +408,8 @@ fun HomeScreen( navController: NavHostController) {
                                         text = "Room code:",
                                         fontSize = 20.sp
                                     )
-                                    Text(
-                                        text = roomCode,
-                                        fontSize = 50.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.secondary
-                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    RoomCodeRow(roomCode)
                                     Spacer(modifier = Modifier.height(32.dp))
                                     Btn(
                                         text = if(roomGamemode == "Free for All"){ "Join Game"} else{"Create Teams"},

@@ -180,7 +180,7 @@ class ApiContext(private val context: Context) {
     }
 
     suspend fun changeMyStatus(changeStatusRequest: ChangeStatusRequest, roomCode: String): Response<OtpResponse> {
-        // Recupera il token attuale
+
         val tokenManager = com.example.commander.Storage.TokenManager(context)
         val accessToken = kotlinx.coroutines.runBlocking { tokenManager.accessToken.firstOrNull() }
         Log.d("change status", "Token usato: $accessToken")
@@ -188,6 +188,18 @@ class ApiContext(private val context: Context) {
         val response = api.changeMyStatus(roomCode = roomCode, body = changeStatusRequest)
         Log.d("change status", "Response code: ${response.code()} - ${response.message()}")
         Log.d("change status", "ErrorBody: ${response.errorBody()?.string()}")
+        return response
+    }
+
+    suspend fun endMatch(roomCode: String, endSessionRequest: EndSessionRequest): Response<EndSessionResponse>{
+        val response = api.endMatch(roomCode, endSessionRequest)
+        Log.d("end match", "Body: ${response}")
+        return response
+    }
+
+    suspend fun deleteAccount() {
+        val response = api.deleteAccount()
+
         return response
     }
 }

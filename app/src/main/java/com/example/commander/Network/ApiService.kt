@@ -10,6 +10,8 @@ import com.example.commander.Models.CheckEmailResponse
 import com.example.commander.Models.CheckUsernameRequest
 import com.example.commander.Models.CheckUsernameResponse
 import com.example.commander.Models.CreateSessionResponse
+import com.example.commander.Models.EndSessionRequest
+import com.example.commander.Models.EndSessionResponse
 import com.example.commander.Models.JoinSessionRequest
 import com.example.commander.Models.LoginRequest
 import com.example.commander.Models.LoginResponse
@@ -26,6 +28,7 @@ import com.example.commander.Models.refreshTokenRequest
 import com.example.commander.Models.refreshTokenResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -134,6 +137,13 @@ interface ApiService {
         @Body body: ChangeStatusRequest
     ): Response<OtpResponse>
 
+    @POST("sessions/{roomCode}/end/")
+    suspend fun endMatch(
+        @Path("roomCode") roomCode: String,
+        @Body body: EndSessionRequest
+    ): Response<EndSessionResponse>
 
 
+    @DELETE("delete-account/")
+    suspend fun deleteAccount()
 }

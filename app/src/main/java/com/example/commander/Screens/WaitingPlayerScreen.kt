@@ -1,5 +1,6 @@
 package com.example.commander.Screens
 
+import AutoSizeText
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -64,7 +65,10 @@ fun WaitingPlayerScreen(
 
     BackHandler {
         activity.leaveActiveSession()
-        navController.popBackStack()
+        navController.navigate("home") {
+            popUpTo("waitingPlayers/$roomCode/$roomName/$gamemode") { inclusive = true }
+            launchSingleTop = true
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -152,8 +156,10 @@ fun WaitingPlayerScreen(
                     tint = MaterialTheme.colorScheme.secondary,
                     onClick = {
                         activity.leaveActiveSession()
-                        navController.popBackStack()
-                        navController.popBackStack()
+                        navController.navigate("home") {
+                            popUpTo("waitingPlayers/$roomCode/$roomName/$gamemode") { inclusive = true }
+                            launchSingleTop = true
+                        }
                     },
                     icon = Icons.Default.ArrowBackIosNew,
                     contentDescription = "Torna indietro"
@@ -166,11 +172,16 @@ fun WaitingPlayerScreen(
                 Spacer(Modifier.width(16.dp))
             }
             Spacer(modifier = Modifier.height(32.dp))
-            Text(
+            AutoSizeText(
                 text = roomName?:"",
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 30.sp,
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+                maxFontSize = 32.sp,
+                minFontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .align(Alignment.CenterHorizontally),
+                maxLines = 1
             )
             Spacer(modifier = Modifier.height(48.dp))
 

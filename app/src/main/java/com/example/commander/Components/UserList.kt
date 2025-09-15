@@ -21,7 +21,7 @@ fun UserList(
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .background(MaterialTheme.colorScheme.outline)
             .padding(12.dp)
     ) {
         Column(

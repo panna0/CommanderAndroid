@@ -12,15 +12,24 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.commander.Storage.TokenManager
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileList( birthDate: String, email: String, navController: NavHostController) {
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val tokenManager = remember { TokenManager(context) }
+
 
     Column {
         Text(text = "Personal Info", fontSize = 20.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(16.dp, 0.dp))
@@ -46,7 +55,12 @@ fun ProfileList( birthDate: String, email: String, navController: NavHostControl
             value = "Log out",
             isClickable = true,
             leadingIcon = Icons.Default.Logout,
-            onClick = { /* Handle log out logic */ }
+            onClick = { scope.launch{
+               tokenManager.clearTokens()
+                navController.navigate("home") {
+                    popUpTo("home") { inclusive = true }
+                }
+            } }
         )
     }
 

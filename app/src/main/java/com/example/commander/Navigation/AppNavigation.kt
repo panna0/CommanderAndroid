@@ -1,7 +1,8 @@
 package com.example.commander.Navigation
 
-
 import MatchScreen
+import android.content.Intent
+import android.nfc.NfcAdapter
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -29,6 +30,7 @@ import com.example.commander.Screens.HomeScreen
 
 import com.example.commander.Screens.LoginScreen
 import com.example.commander.Screens.MapScreen
+import com.example.commander.Screens.MatchResultScreen
 import com.example.commander.Screens.ProfileScreen
 import com.example.commander.Screens.RegisterScreen
 import com.example.commander.Screens.WaitAdminScreen
@@ -36,10 +38,9 @@ import com.example.commander.Screens.WaitingPlayerScreen
 import com.example.commander.Screens.YourMatchesScreen
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(nfcTagId: State<String?>, nfcIntent: Intent?) {
     val navController = rememberNavController()
     val users = remember { mutableStateListOf<User>() }
-    val context = LocalContext.current
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -47,9 +48,11 @@ fun AppNavigation() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
+
+
         Scaffold(
             bottomBar = {
-                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute != "yourMatches" && currentRoute != "createTeams/{roomCode}/{roomName}/{gamemode}" && currentRoute != "waitingPlayers/{roomCode}/{roomName}/{gamemode}") {
+                if (currentRoute != "login" && currentRoute != "register" && currentRoute != "editProfile" && currentRoute != "yourMatches" && currentRoute != "createTeams/{roomCode}/{roomName}/{gamemode}" && currentRoute != "waitingPlayers/{roomCode}/{roomName}/{gamemode}" && currentRoute != "matchResult/{roomCode}/{admin}/{winner}/{myUsername}/{roomGamemode}/{roomName}/{myTeam}" && currentRoute != "wait_admin_screen/{roomCode}") {
                     BottomNavBar(navController = navController)
                 }
             }
@@ -115,7 +118,7 @@ fun AppNavigation() {
                     val roomCode = backStackEntry.arguments?.getString("roomCode")
 
                     if (roomCode != null) {
-                        MatchScreen(roomCode = roomCode, navController = navController)
+                        MatchScreen(roomCode = roomCode, navController = navController, nfcTagId = nfcTagId)
                     }
                 }
                 composable("createTeams/{roomCode}/{roomName}/{gamemode}") { backStackEntry ->
@@ -142,6 +145,19 @@ fun AppNavigation() {
                     }
                 }
 
+                composable("matchResult/{roomCode}/{admin}/{winner}/{myUsername}/{roomGamemode}/{roomName}/{myTeam}"){ backStackEntry ->
+                    val roomCode = backStackEntry.arguments?.getString("roomCode")
+                    val winner = backStackEntry.arguments?.getString("winner")
+                    val admin = backStackEntry.arguments?.getString("admin")
+                    val myUsername = backStackEntry.arguments?.getString("myUsername")
+                    val roomGamemode = backStackEntry.arguments?.getString("roomGamemode")
+                    val roomName = backStackEntry.arguments?.getString("roomName")
+                    val myTeam = backStackEntry.arguments?.getString("myTeam")
+
+                    if (roomCode != null) {
+                        MatchResultScreen(roomCode = roomCode, navController = navController, winner = winner, admin = admin, myUsername = myUsername, roomGamemode = roomGamemode ?: "" , roomName = roomName ?: "", myTeam = myTeam )
+                    }
+                }
             }
         }
     }
