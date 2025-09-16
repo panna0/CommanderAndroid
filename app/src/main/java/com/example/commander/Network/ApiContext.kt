@@ -202,4 +202,10 @@ class ApiContext(private val context: Context) {
 
         return response
     }
+
+    suspend fun changePassword(changePasswordRequest: ChangePasswordRequest): Response<OtpResponse> {
+        val response = api.changePassword(changePasswordRequest)
+
+        return response
+    }
 }

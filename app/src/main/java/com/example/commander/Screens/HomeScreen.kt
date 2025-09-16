@@ -209,8 +209,6 @@ fun HomeScreen( navController: NavHostController) {
     }
 
 
-
-
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = { isRefreshing = true }

@@ -1,5 +1,8 @@
 package com.example.commander
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Build
@@ -15,6 +18,9 @@ import com.example.commander.Network.SessionWebSocket
 import com.example.commander.UI.CommanderTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.OffsetDateTime
 import java.util.*
@@ -32,10 +38,22 @@ class MainActivity : ComponentActivity() {
     private var nfcAdapter: NfcAdapter? = null
     private val _nfcTagId = mutableStateOf<String?>(null)
     val nfcTagId: State<String?> get() = _nfcTagId
+    private val mainScope = MainScope()
+    private var resetJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "session_updates",
+                "Session updates",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply { description = "Updates for game sessions" }
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                .createNotificationChannel(channel)
+        }
 
         setContent {
             CommanderTheme {
@@ -50,8 +68,17 @@ class MainActivity : ComponentActivity() {
             val id = tag?.id
             val hex = bytesToHex(id)
             Log.d("MainActivity.NFC", "Tag discovered: $hex")
+
             runOnUiThread {
                 _nfcTagId.value = hex
+
+
+                resetJob?.cancel()
+                resetJob = mainScope.launch {
+                    delay(1000) // 1 secondo
+                    _nfcTagId.value = null
+                    Log.d("MainActivity.NFC", "Tag timeout → reset a null")
+                }
             }
         } catch (t: Throwable) {
             Log.e("MainActivity.NFC", "ReaderCallback error", t)
@@ -110,6 +137,8 @@ class MainActivity : ComponentActivity() {
     fun setActiveSession(roomCode: String, socket: SessionWebSocket) {
         this.currentRoomCode = roomCode
         this.sessionSocket = socket
+
+        com.google.firebase.messaging.FirebaseMessaging.getInstance().subscribeToTopic("session_$roomCode")
     }
 
     suspend fun startMatch(): Boolean {
@@ -137,6 +166,7 @@ class MainActivity : ComponentActivity() {
 
     fun leaveActiveSession() {
         currentRoomCode?.let { code ->
+            com.google.firebase.messaging.FirebaseMessaging.getInstance().unsubscribeFromTopic("session_$code")
             CoroutineScope(Dispatchers.IO).launch {
                 apiContext.leaveSession(code)
                 sessionSocket?.disconnect()

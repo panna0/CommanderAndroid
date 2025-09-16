@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "46322892373",
+    "project_id": "commander-inscre",
+    "storage_bucket": "commander-inscre.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:46322892373:android:b9e58191a0b07d0a745edc",
+        "android_client_info": {
+          "package_name": "com.example.commander"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBr4KAHdkHyrJho9HXZDEyDZN7a4HdryWI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

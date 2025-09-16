@@ -1,10 +1,12 @@
 [versions]
 agp = "8.8.0"
-android = "11.2.0"
+android = "11.7.3"
 composeBom = "2025.01.00"
-mapsCompose = "11.2.0"
+firebaseBom = "34.2.0"
+lottieCompose = "6.4.1"
+mapsCompose = "11.7.3"
 navigation = "2.7.5"
-kotlin = "1.9.0"
+kotlin = "2.1.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -21,12 +23,16 @@ converterGson = "2.9.0"
 datastore = "1.0.0"
 
 
+
 [libraries]
 android = { module = "com.mapbox.maps:android", version.ref = "android" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-foundation = { module = "androidx.compose.foundation:foundation"}
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson"}
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 foundation = { module = "androidx.compose.foundation:foundation" }
+lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 maps-compose = { module = "com.mapbox.extension:maps-compose", version.ref = "mapsCompose" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 play-services-location = { module = "com.google.android.gms:play-services-location", version.ref = "playServicesLocation" }
@@ -54,3 +60,4 @@ androidxNavigationCompose = { module = "androidx.navigation:navigation-compose",
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version = "2.0.21" }

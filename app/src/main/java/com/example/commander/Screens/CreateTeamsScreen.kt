@@ -291,6 +291,9 @@ fun CreateTeamsScreen(
                             if (!allAssigned) {
                                 errorText = "You must assign all players to a team to start."
                                 return@launch
+                            } else if (!assignments.values.all { it.isNotEmpty() }) {
+                                errorText = "Each team must have at least one player."
+                                return@launch
                             } else {
                                 errorText = null
                             }

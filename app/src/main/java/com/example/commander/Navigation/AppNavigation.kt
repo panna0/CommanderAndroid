@@ -24,6 +24,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.commander.Components.BottomNavBar
 
 import com.example.commander.Models.User
+import com.example.commander.Screens.ChangePasswordScreen
 import com.example.commander.Screens.CreateTeamsScreen
 import com.example.commander.Screens.EditProfileScreen
 import com.example.commander.Screens.HomeScreen
@@ -158,7 +159,10 @@ fun AppNavigation(nfcTagId: State<String?>, nfcIntent: Intent?) {
                         MatchResultScreen(roomCode = roomCode, navController = navController, winner = winner, admin = admin, myUsername = myUsername, roomGamemode = roomGamemode ?: "" , roomName = roomName ?: "", myTeam = myTeam )
                     }
                 }
+
+                composable("changePassword") {
+                    ChangePasswordScreen(navController= navController)
             }
         }
     }
-}
+}}

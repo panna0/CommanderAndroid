@@ -4,6 +4,7 @@ import com.example.commander.Models.AddTeamRequest
 import com.example.commander.Models.AddTeamResponse
 import com.example.commander.Models.AssignPlayerRequest
 import com.example.commander.Models.AssignPlayerResponse
+import com.example.commander.Models.ChangePasswordRequest
 import com.example.commander.Models.ChangeStatusRequest
 import com.example.commander.Models.CheckEmailRequest
 import com.example.commander.Models.CheckEmailResponse
@@ -75,6 +76,8 @@ interface ApiService {
         @Path("roomCode") roomCode: String
     ): Response<List<TeamInSessionResponse>>
 
+    @GET()
+
     @POST("login/")
     suspend fun login(@Body body: LoginRequest): Response<LoginResponse>
 
@@ -142,6 +145,9 @@ interface ApiService {
         @Path("roomCode") roomCode: String,
         @Body body: EndSessionRequest
     ): Response<EndSessionResponse>
+
+    @POST("change-password/")
+    suspend fun changePassword(@Body body: ChangePasswordRequest): Response<OtpResponse>
 
 
     @DELETE("delete-account/")

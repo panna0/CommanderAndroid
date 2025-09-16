@@ -99,7 +99,7 @@ fun ProfileScreen(navController: NavHostController) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.align(Alignment.End)) {
                 Text(text = "My Profile", fontWeight = FontWeight.SemiBold, fontSize = 20.sp)
                 Spacer(modifier = Modifier.width(50.dp))
-                MinimalDropdownMenu()
+                MinimalDropdownMenu(navController = navController)
             }
 
             Spacer(modifier = Modifier.height(24.dp))

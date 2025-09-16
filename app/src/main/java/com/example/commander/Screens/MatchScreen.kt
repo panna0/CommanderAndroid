@@ -231,6 +231,14 @@ fun MatchScreen(navController: NavController, roomCode: String, nfcTagId: State<
                 }
             }
 
+             if(msg.type == "session_closed"){
+                 activity.endGame()
+                 activity.leaveActiveSession()
+                 navController.navigate("home") {
+                     popUpTo("match/$roomCode") { inclusive = true }
+                 }
+             }
+
             if(msg.type == "session_ended"){
                 winner = msg.winner?.asDisplayString() ?: ""
                 reason = msg.reason ?: "Match Ended"

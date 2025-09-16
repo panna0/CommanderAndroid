@@ -1,8 +1,9 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.composeCompiler)
+    id("com.google.gms.google-services")
 }
-
 android {
     namespace = "com.example.commander"
     compileSdk = 35
@@ -14,6 +15,7 @@ android {
     defaultConfig {
         applicationId = "com.example.commander"
         minSdk = 31
+
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -40,9 +42,7 @@ android {
         jvmTarget = "11"
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.2"
-    }
+
 }
 
 dependencies {
@@ -72,10 +72,16 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.okhttp)
-
+    implementation (libs.firebase.analytics)
+    implementation (platform(libs.firebase.bom))
+    implementation ("com.google.firebase:firebase-messaging:25.0.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+    implementation(libs.lottie.compose)
 
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidxJunit)
     androidTestImplementation(libs.androidxEspressoCore)
+
+
 }

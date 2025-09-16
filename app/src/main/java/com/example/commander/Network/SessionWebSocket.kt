@@ -2,7 +2,9 @@ package com.example.commander.Network
 
 import android.util.Log
 import com.example.commander.Models.WebSocketMessage
+import com.example.commander.Models.Winner
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import okhttp3.*
 
 class SessionWebSocket(
@@ -11,7 +13,11 @@ class SessionWebSocket(
 ) {
     private val client = OkHttpClient()
     private var webSocket: WebSocket? = null
-    private val gson = Gson()
+
+
+    private val gson: Gson = GsonBuilder()
+        .registerTypeAdapter(Winner::class.java, WinnerDeserializer())
+        .create()
 
     fun connect() {
         val request = Request.Builder()
